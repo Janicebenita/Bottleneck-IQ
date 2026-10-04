@@ -349,16 +349,6 @@ Current result: **96 backend tests passed** and **37 frontend tests passed**. Th
 
 ---
 
-## ⚖️ Honest Limitations
-
-- Included telemetry is deterministic seeded demonstration data, not a live enterprise feed.
-- Forecasting is a transparent bounded model, not a calibrated probability.
-- Simulation covers documented variables and is not a complete production replica.
-- Business-impact outputs are estimates, not guaranteed savings.
-- Live Bedrock and AgentCore evidence require authenticated AWS execution.
-- HumanGuard has no production-action tool by design.
-
----
 
 ## 📚 WCC Documentation
 
