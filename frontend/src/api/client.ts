@@ -1,0 +1,31 @@
+import type {Audit,AuditPackage,Evidence,EvidenceLink,Health,Incident,Hypothesis,NexusAgent,NexusAuditV1,NexusEvidenceV1,NexusRun,NexusTelemetry,NexusTwin,Patch,PullRequest,ReplayRun,RoleVerification,ScenarioResult,Scorecard,StrandsRun,Tournament,TwinManifest,Verification} from '../types'
+declare global{interface Window{__BOTTLENECK_IQ_CONFIG__?:{API_BASE_URL?:string}}}
+const BASE=(window.__BOTTLENECK_IQ_CONFIG__?.API_BASE_URL||import.meta.env.VITE_API_BASE_URL||'').replace(/\/$/,'')
+async function req<T>(path:string,init?:RequestInit):Promise<T>{const r=await fetch(`${BASE}${path}`,{headers:{'Content-Type':'application/json'},...init});if(!r.ok){const prefix=`Backend request failed (${r.status}).`;let message=prefix;try{const body=await r.json() as {detail?:string;message?:string;code?:string};const detail=body.detail||body.message||body.code;if(detail)message=`${prefix} ${detail}`}catch{}throw new Error(message)}return r.json()}
+export const api={nexus:(load=1,capacity=12000)=>req<NexusTwin>(`/api/nexus/operational-twin?load_multiplier=${load}&redis_capacity=${capacity}`),incidents:()=>req<Incident[]>('/api/incidents'),seed:()=>req<{ids?:number[]}>('/api/demo/seed',{method:'POST'}),reset:()=>req('/api/demo/reset',{method:'POST'}),trigger:()=>req<Incident>('/api/demo/trigger-incident',{method:'POST'}),health:()=>req<Health>('/health'),get:(id:number)=>req<Incident>(`/api/incidents/${id}`),evidence:(id:number)=>req<Evidence[]>(`/api/incidents/${id}/evidence`),hypotheses:(id:number)=>req<Hypothesis[]>(`/api/incidents/${id}/hypotheses`),timeline:(id:number)=>req<Audit[]>(`/api/incidents/${id}/timeline`),verification:(id:number)=>req<Verification[]>(`/api/incidents/${id}/verification`),patches:(id:number)=>req<Patch[]>(`/api/incidents/${id}/patches`),prs:(id:number)=>req<PullRequest[]>(`/api/incidents/${id}/pull-requests`),twin:(id:number)=>req<TwinManifest>(`/api/incidents/${id}/digital-twin`),replays:(id:number)=>req<ReplayRun[]>(`/api/incidents/${id}/replays`),tournament:(id:number)=>req<Tournament>(`/api/incidents/${id}/repair-tournament`),counterfactuals:(id:number)=>req<ScenarioResult[]>(`/api/incidents/${id}/counterfactuals`),evidenceLinks:(id:number)=>req<EvidenceLink[]>(`/api/incidents/${id}/evidence-links`),scorecard:(id:number)=>req<Scorecard>(`/api/incidents/${id}/scorecard`),auditPackage:(id:number)=>req<AuditPackage>(`/api/incidents/${id}/audit-package`),downloadUrl:(id:number,kind:'json'|'report'|'bundle')=>`${BASE}/api/incidents/${id}/audit-package${kind==='json'?'':`/${kind}`}`,action:(id:number,a:string,body?:object)=>req(`/api/incidents/${id}/${a}`,{method:'POST',body:body?JSON.stringify(body):undefined})}
+export const nexusApi={
+ bootstrap:()=>req<NexusRun>('/api/v1/demo/bootstrap',{method:'POST'}),
+ workflows:()=>req<NexusRun[]>('/api/v1/workflows'),
+ seed:()=>req<NexusRun>('/api/v1/demo/seed',{method:'POST'}),
+ reset:()=>req('/api/v1/demo/reset',{method:'POST'}),
+ runAll:(id:number)=>req<NexusRun>(`/api/v1/workflows/${id}/run-all`,{method:'POST'}),
+ invokeStrands:(id:number,prompt='Investigate this workflow end to end and surface only a verified human decision.')=>req<StrandsRun>(`/api/v1/workflows/${id}/strands/invoke`,{method:'POST',body:JSON.stringify({prompt})}),
+ strandsStatus:()=>req<{enabled:boolean;sdk_available:boolean;provider:string;model_id:string;region:string;agentcore_ready:boolean;background_monitor_enabled:boolean;production_action:string}>('/api/v1/strands/status'),
+ create:(controls:Record<string,unknown>)=>req<NexusRun>('/api/v1/workflows',{method:'POST',body:JSON.stringify({name:'Payment Service capacity forecast',controls})}),
+ importOperationalJson:(payload:{filename:string;content:string})=>req<NexusRun>('/api/v1/workflows/import-json',{method:'POST',body:JSON.stringify(payload)}),
+ telemetry:(id:number)=>req<NexusTelemetry[]>(`/api/v1/telemetry?run_id=${id}`),
+ evidence:(id:number)=>req<NexusEvidenceV1[]>(`/api/v1/workflows/${id}/evidence`),
+ uploadEvidence:(id:number,payload:{filename:string;category:string;content:string})=>req<NexusEvidenceV1>(`/api/v1/workflows/${id}/evidence/upload`,{method:'POST',body:JSON.stringify(payload)}),
+ timeline:(id:number)=>req<NexusAuditV1[]>(`/api/v1/workflows/${id}/timeline`),
+ verificationResults:(id:number)=>req<Record<string,unknown>[]>(`/api/v1/workflows/${id}/verification`),
+ agents:(id:number)=>req<NexusAgent[]>(`/api/v1/workflows/${id}/agents`),
+ agent:(id:number,name:string)=>req<NexusAgent>(`/api/v1/workflows/${id}/agents/${name}`),
+ agentEvents:(id:number,name:string)=>req<NexusAuditV1[]>(`/api/v1/workflows/${id}/agents/${name}/events`),
+ runAgent:(id:number,name:string,rerun=false)=>req<NexusAgent>(`/api/v1/workflows/${id}/agents/${name}/${rerun?'rerun':'run'}`,{method:'POST',body:JSON.stringify({actor_name:'human-operator'})}),
+ verifyRole:(actor_name:string,access_code:string)=>req<RoleVerification>('/api/v1/auth/verify-role',{method:'POST',body:JSON.stringify({actor_name,access_code})}),
+ decide:(id:number,endpoint:'approve'|'reject'|'request-evidence',payload:{actor_name:string;decision:string;rationale:string;verification_token:string})=>req<Record<string,unknown>>(`/api/v1/workflows/${id}/${endpoint}`,{method:'POST',body:JSON.stringify(payload)}),
+ downloadEvidence:async(id:number)=>{const response=await fetch(`${BASE}/api/v1/workflows/${id}/export`);if(!response.ok)throw new Error(response.status===409?'Evidence ZIP has already been downloaded and revoked.':`Evidence export failed (${response.status}).`);const blob=await response.blob();const url=URL.createObjectURL(blob);const anchor=document.createElement('a');anchor.href=url;anchor.download=`bottleneck-iq-${id}.zip`;anchor.click();URL.revokeObjectURL(url)},
+ integrations:()=>req<{integration:string;status:string;last_health_check:string;configured_service:string;last_successful_call?:string;fallback_status:string;trace_id?:string;documentation:string;production_action:string;runtime_service?:string;runtime_revision?:string;runtime_configuration?:string;runtime_project?:string;runtime_region?:string}[]>('/api/v1/platform/integrations'),
+ a2a:(id:number)=>req<Record<string,unknown>[]>(`/api/v1/platform/a2a/messages/${id}`),
+ antigravity:()=>req<{status:string;official_runtime_invoked:boolean;blocker:string;production_action:string}>('/api/v1/integrations/antigravity/status'),
+}

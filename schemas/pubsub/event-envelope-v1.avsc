@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "Bottleneck IQEventEnvelopeV1",
+  "namespace": "com.bottleneck-iq.nexus",
+  "fields": [
+    {"name": "event_id", "type": "string"},
+    {"name": "schema_version", "type": "string"},
+    {"name": "event_type", "type": "string"},
+    {"name": "correlation_id", "type": "string"},
+    {"name": "trace_id", "type": "string"},
+    {"name": "production_action", "type": "string"}
+  ]
+}

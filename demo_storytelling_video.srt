@@ -1,0 +1,44 @@
+1
+00:00:00,000 --> 00:00:29,000
+Meet Bottleneck IQ
+Welcome to Bottleneck IQ, the Enterprise Operational Digital Twin. The Payment Service is healthy now, but traffic and Redis memory pressure are rising. Nexus predicts the next operational bottleneck before customers experience it, tests possible interventions in a bounded simulation, and stops at a human decision. Throughout this demonstration, production action is not executed.
+
+2
+00:00:29,000 --> 00:00:58,000
+Yesterday, now and tomorrow
+The simulated run begins with a healthy baseline. Moving from yesterday to now and then forty-five minutes ahead reveals a steady Redis memory trend. Safe capacity crosses ninety per cent at plus thirty minutes. Customer impact is estimated at plus forty-five, whilst the conventional reactive alert remains quiet. Nexus makes this early-warning window visible and reviewable.
+
+3
+00:00:58,000 --> 00:01:30,000
+Evidence before confidence
+The prediction is transparent. Nexus shows the saturation equation, threshold, residual error and assumptions beside content-hashed evidence. Metrics establish the rising memory slope. Configuration establishes current capacity and replicas. Trace-like events place Redis on the Payment Service critical path. Confidence is a heuristic evidence score, not a probability or a claim of certainty.
+
+4
+00:01:30,000 --> 00:02:03,000
+Explore the bounded Twin
+Explore Mode changes the future without touching production. In this simulated run, traffic increases to ten times baseline, Redis capacity remains twelve thousand, replicas remain four, and dependency latency rises to eighty milliseconds. Rerun bounded Twin creates a persisted model with a fixed seed and disabled network, then replays the same documented scenarios. No infrastructure command is available here.
+
+5
+00:02:03,000 --> 00:02:35,000
+Twelve deterministic futures
+The Scenario Lab now runs twelve futures against the same hashed Twin. It covers baseline growth, Redis crash and latency, replica failover, ten-times traffic, million-user stress, reduced capacity, increased replicas, rollback, rate limiting, cache-policy correction and configuration drift. Selecting a scenario reveals its inputs, recovery time, outcome and deterministic result hash for repeatable comparison.
+
+6
+00:02:35,000 --> 00:03:07,000
+Reject the plausible false fix
+The Intervention Tournament compares FAST, SAFE and OPTIMAL. FAST scales application replicas immediately and appears quick, but the bottleneck is Redis. Its mandatory failover gate fails, so FAST is disqualified regardless of score. SAFE remains eligible. OPTIMAL combines Redis capacity, cache-policy correction and gradual scaling, passes every mandatory gate, and becomes the evidence-backed recommendation.
+
+7
+00:03:07,000 --> 00:03:38,000
+Business impact, visibly estimated
+Nexus translates operational risk into an estimated business exposure using visible assumptions: request rate, conversion rate, average order value, the risk window, projected failure rate and an SLA penalty. The arithmetic helps a reviewer compare urgency and intervention cost. It is explicitly an operational estimate, not an accounting result, guaranteed loss, or calibrated financial forecast.
+
+8
+00:03:38,000 --> 00:04:09,000
+Human authority is preserved
+Nexus stops at the Human Approval Gateway. The recommendation, contradictory evidence and audit trail are ready for an accountable reviewer. This simulated run does not press approve. Even a real approval would only record a named decision and enable evidence export. It would not deploy, scale replicas, change Redis or call a production control plane. Production action is not executed.
+
+9
+00:04:09,000 --> 00:04:42,000
+Predict, test, decide safely
+Bottleneck IQ turns late reactive alerting into an earlier, evidence-backed decision. It predicts the emerging bottleneck, tests interventions across deterministic futures, rejects a convincing false fix, quantifies estimated exposure and preserves human control. Every important claim remains traceable to evidence. Nothing was automatically deployed. Production action was not executed. Thank you for watching.

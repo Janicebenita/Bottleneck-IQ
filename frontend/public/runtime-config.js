@@ -1,0 +1,1 @@
+window.__BOTTLENECK_IQ_CONFIG__={API_BASE_URL:""};

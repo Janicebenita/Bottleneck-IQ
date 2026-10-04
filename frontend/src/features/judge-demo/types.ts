@@ -1,0 +1,14 @@
+import type {NexusAuditV1,NexusCandidate,NexusEvidenceV1,NexusRun,NexusScenario,NexusTelemetry} from '../../types';
+
+export type JudgeStageId='problem'|'current-healthy-state'|'rising-redis-pressure'|'safe-capacity-crossing'|'customer-impact-estimate'|'digital-twin'|'scenario-progress'|'intervention-tournament'|'fast-disqualification'|'gemini-reasoning'|'gemma-policy-review'|'mandatory-safety-gates'|'verification-result'|'executive-recommendation'|'human-boundary'|'intern-rejection'|'senior-rationale'|'audit-chain-update'|'evidence-zip'|'google-cloud-evidence';
+export type EvidenceStatus='VERIFIED_LIVE'|'VERIFIED_LOCAL'|'IMPLEMENTED_REQUIRES_CREDENTIALS'|'LOCAL_ADAPTER_ONLY'|'FALLBACK_ACTIVE'|'BLOCKED_BY_PARTICIPANT_ACCESS'|'NOT_YET_EXECUTED'|'FAILED';
+export type StageFact={label:string;value:string;source:'backend'|'derived'|'fallback';emphasis?:'good'|'warn'|'bad'};
+export type EvidenceReference={label:string;value:string};
+export interface JudgeDemoStage{
+ id:JudgeStageId;order:number;title:string;shortDescription:string;metric?:string;purpose:string;whatItDoes:string;whyItMatters:string;
+ implemented:string[];missingForLiveOperation:string[];status:EvidenceStatus;liveData:StageFact[];evidenceReferences:EvidenceReference[];hashes:string[];timings:string[];
+ assumptions:string[];safetyImplications:string[];googleCloudServices:string[];nextStageId?:JudgeStageId;judgeTakeaway:string;backendFieldMap?:Record<string,string>;href?:string;
+ scenarios?:NexusScenario[];candidates?:NexusCandidate[];audit?:NexusAuditV1;telemetry?:NexusTelemetry;evidence?:NexusEvidenceV1[];
+}
+export type IntegrationHealth={integration:string;status:string;last_health_check:string;configured_service:string;last_successful_call?:string;fallback_status:string;trace_id?:string;documentation:string;production_action:string;runtime_service?:string;runtime_revision?:string;runtime_configuration?:string;runtime_project?:string;runtime_region?:string};
+export type StageAdapterInput={run?:NexusRun;telemetry?:NexusTelemetry[];evidence?:NexusEvidenceV1[];audit?:NexusAuditV1[];verification?:Record<string,unknown>[];integrations?:IntegrationHealth[];a2a?:Record<string,unknown>[];antigravity?:{status:string;official_runtime_invoked:boolean;blocker:string;production_action:string};strands?:{enabled:boolean;sdk_available:boolean;provider:string;model_id:string;region:string;agentcore_ready:boolean;background_monitor_enabled:boolean;production_action:string};loading:boolean;failed:boolean};

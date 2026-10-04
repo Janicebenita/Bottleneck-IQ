@@ -1,0 +1,66 @@
+"""Smoke-test live Cloud Run URLs without printing identity tokens or secrets."""
+
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import subprocess
+import urllib.request
+
+SERVICES = (
+    "bottleneck-iq-frontend",
+    "bottleneck-iq-api-gateway",
+    "bottleneck-iq-orchestrator",
+    "bottleneck-iq-forecast-service",
+    "bottleneck-iq-simulation-service",
+    "bottleneck-iq-verification-service",
+    "bottleneck-iq-evidence-service",
+    "bottleneck-iq-gemma-service",
+    "bottleneck-iq-mcp-server",
+)
+
+
+def _gcloud(*args: str) -> str:
+    result = subprocess.run(["gcloud", *args], check=True, text=True, capture_output=True)  # noqa: S603
+    return result.stdout.strip()
+
+
+def main() -> None:
+    project = os.getenv("PROJECT_ID", "bottleneck-iq-wcc")
+    region = os.getenv("REGION", "asia-south1")
+    identity_service_account = os.getenv("CI_SERVICE_ACCOUNT", "").strip()
+    if project != "bottleneck-iq-wcc" or shutil.which("gcloud") is None:
+        raise SystemExit("Expected project and authenticated gcloud CLI are required.")
+    evidence: list[dict[str, str]] = []
+    for service in SERVICES:
+        url = _gcloud("run", "services", "describe", service, "--project", project, "--region", region, "--format=value(status.url)")
+        revision = _gcloud("run", "services", "describe", service, "--project", project, "--region", region, "--format=value(status.latestReadyRevisionName)")
+        headers: dict[str, str] = {}
+        if service not in {"bottleneck-iq-frontend", "bottleneck-iq-api-gateway"}:
+            token_args = ["auth", "print-identity-token", f"--audiences={url}"]
+            if identity_service_account:
+                token_args.append(f"--impersonate-service-account={identity_service_account}")
+            token = _gcloud(*token_args)
+            headers["Authorization"] = f"Bearer {token}"
+        if service == "bottleneck-iq-api-gateway":
+            seed = urllib.request.Request(f"{url}/api/v1/demo/seed", data=b"{}", headers={"Content-Type": "application/json"}, method="POST")
+            with urllib.request.urlopen(seed, timeout=30) as response:  # noqa: S310
+                if response.status not in {200, 201}:
+                    raise SystemExit(f"{service} seed returned {response.status}")
+        results: dict[str, str] = {}
+        for endpoint in ("health", "readiness"):
+            request = urllib.request.Request(f"{url}/{endpoint}", headers=headers)
+            with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310
+                if response.status != 200:
+                    raise SystemExit(f"{service} {endpoint} returned {response.status}")
+                body = response.read().decode("utf-8", errors="replace")
+                if service == "bottleneck-iq-api-gateway" and endpoint == "readiness" and '"ready":true' not in body.replace(" ", "").lower():
+                    raise SystemExit("API readiness returned HTTP 200 but was not ready.")
+                results[endpoint] = str(response.status)
+        evidence.append({"service": service, "url": url, "revision": revision, **results})
+    print(json.dumps(evidence, indent=2))
+
+
+if __name__ == "__main__":
+    main()

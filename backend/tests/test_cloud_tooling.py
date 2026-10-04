@@ -1,0 +1,125 @@
+from pathlib import Path
+
+import yaml  # type: ignore[import-untyped]
+
+from backend.app.config import Settings
+from scripts.provision_pubsub import TOPICS
+
+ROOT = Path(__file__).parents[2]
+
+
+def test_google_cloud_defaults_match_approved_target(monkeypatch):
+    monkeypatch.delenv("GOOGLE_CLOUD_REGION", raising=False)
+    monkeypatch.delenv("BIGQUERY_DATASET", raising=False)
+    monkeypatch.delenv("PUBSUB_TOPIC", raising=False)
+    settings = Settings(_env_file=None)
+    assert settings.google_cloud_region == "asia-south1"
+    assert settings.bigquery_dataset == "bottleneck_iq"
+    assert settings.pubsub_topic == "bottleneck-iq-workflow-events"
+
+
+def test_bigquery_schema_contains_all_required_tables():
+    ddl_files = sorted((ROOT / "sql" / "bigquery").glob("*.sql"))
+    sql = "\n".join(path.read_text(encoding="utf-8") for path in ddl_files)
+    tables = {
+        "telemetry_events",
+        "workflow_events",
+        "agent_executions",
+        "model_invocations",
+        "scenario_results",
+        "verification_results",
+        "business_impact_estimates",
+        "audit_event_exports",
+        "forecast_evaluations",
+    }
+    assert all(f"`${{PROJECT}}.${{DATASET}}.{name}`" in sql for name in tables)
+    assert len(ddl_files) == 9
+    assert sql.count("PARTITION BY") == 9
+    assert sql.count("CLUSTER BY") == 9
+    audit = (ROOT / "sql" / "bigquery" / "audit_event_exports.sql").read_text(encoding="utf-8")
+    for field in ("actor_type", "actor_id", "payload_json", "chain_position", "signature", "signer_key_id", "evidence_ids", "schema_version", "ingestion_timestamp"):
+        assert field in audit
+
+
+def test_pubsub_topics_match_required_contract():
+    assert set(TOPICS) == {
+        "bottleneck-iq-agent-tasks",
+        "bottleneck-iq-scenario-events",
+        "bottleneck-iq-verification-events",
+        "bottleneck-iq-model-events",
+        "bottleneck-iq-evidence-events",
+        "bottleneck-iq-bigquery-events",
+        "bottleneck-iq-workflow-events",
+    }
+    provisioner = (ROOT / "scripts" / "provision_pubsub.py").read_text(encoding="utf-8")
+    assert "roles/pubsub.publisher" in provisioner
+    assert "roles/pubsub.subscriber" in provisioner
+
+
+def test_cloud_build_and_run_cover_nine_services():
+    build = yaml.safe_load((ROOT / "cloudbuild.yaml").read_text(encoding="utf-8"))
+    assert build["substitutions"]["_REGION"] == "asia-south1"
+    assert len(build["images"]) == 9
+    manifests = list(
+        yaml.safe_load_all((ROOT / "deploy" / "cloud-run" / "services.yaml").read_text(encoding="utf-8"))
+    )
+    assert {item["metadata"]["name"] for item in manifests} == {
+        "bottleneck-iq-frontend",
+        "bottleneck-iq-api-gateway",
+        "bottleneck-iq-orchestrator",
+        "bottleneck-iq-forecast-service",
+        "bottleneck-iq-simulation-service",
+        "bottleneck-iq-verification-service",
+        "bottleneck-iq-evidence-service",
+        "bottleneck-iq-gemma-service",
+        "bottleneck-iq-mcp-server",
+    }
+
+
+def test_cloud_workflow_uses_oidc_and_no_service_account_key():
+    workflow = (ROOT / ".github" / "workflows" / "google-cloud-runtime.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "id-token: write" in workflow
+    assert "workload_identity_provider" in workflow
+    assert "workflow_dispatch" in workflow
+    assert "service-account.json" not in workflow
+    assert "GOOGLE_API_KEY" not in workflow
+
+
+def test_frontend_cloud_run_uses_runtime_api_url_and_cors_update():
+    dockerfile = (ROOT / "Dockerfile.frontend").read_text(encoding="utf-8")
+    client = (ROOT / "frontend" / "src" / "api" / "client.ts").read_text(encoding="utf-8")
+    deploy = (ROOT / "scripts" / "deploy_cloud_run.sh").read_text(encoding="utf-8")
+    assert "runtime-config.js" in dockerfile and "API_BASE_URL" in dockerfile
+    assert "__BOTTLENECK_IQ_CONFIG__" in client
+    assert "API_BASE_URL=${API_URL}" in deploy
+    assert "gcloud projects describe" in deploy
+    assert "REGIONAL_FRONTEND_URL=" in deploy
+    assert "CORS_ORIGINS=\"${FRONTEND_URL},${REGIONAL_FRONTEND_URL}\"" in deploy
+    assert '--update-env-vars "^|^CORS_ORIGINS=${CORS_ORIGINS}"' in deploy
+    provision = (ROOT / "scripts" / "provision_google_cloud.sh").read_text(encoding="utf-8")
+    assert "roles/secretmanager.secretAccessor" in provision
+
+
+def test_database_backed_images_create_non_root_sqlite_directory():
+    for name in ("Dockerfile.api-gateway", "Dockerfile.gemma", "Dockerfile.mcp"):
+        dockerfile = (ROOT / name).read_text(encoding="utf-8")
+        assert "mkdir -p /app/data" in dockerfile
+        assert "chown -R bottleneck-iq:bottleneck-iq /app/data" in dockerfile
+        assert dockerfile.index("chown -R bottleneck-iq:bottleneck-iq /app/data") < dockerfile.index("USER bottleneck-iq")
+    deploy = (ROOT / "scripts" / "deploy_cloud_run.sh").read_text(encoding="utf-8")
+    assert 'deploy_private bottleneck-iq-mcp-server mcp bottleneck-iq-mcp-sa "INTEGRATION_TOKEN=' in deploy
+    assert '"${MCP_REVISION:-$REVISION}"' in deploy
+    mcp_build = yaml.safe_load((ROOT / "cloudbuild.mcp.yaml").read_text(encoding="utf-8"))
+    assert len(mcp_build["images"]) == 1 and "/mcp:$COMMIT_SHA" in mcp_build["images"][0]
+    api_build = yaml.safe_load((ROOT / "cloudbuild.api.yaml").read_text(encoding="utf-8"))
+    assert len(api_build["images"]) == 1 and "/api:$COMMIT_SHA" in api_build["images"][0]
+    assert "${API_REVISION:-$REVISION}" in deploy
+
+
+def test_readiness_does_not_require_ephemeral_business_seed():
+    source = (ROOT / "backend" / "app" / "main.py").read_text(encoding="utf-8")
+    readiness = source[source.index("def readiness():"):]
+    assert "ready=database and demo_app and provider_ready and safety_ready" in readiness
+    assert "production_action\":\"NOT_EXECUTED" in readiness

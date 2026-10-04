@@ -1,0 +1,9 @@
+import {useQuery} from '@tanstack/react-query';
+import {nexusApi} from '../api/client';
+import Navbar from '../components/Navbar';
+
+export default function PlatformStatusPage(){
+ const query=useQuery({queryKey:['integration-health'],queryFn:nexusApi.integrations,refetchInterval:30000});
+ const title=location.pathname==='/observability'?'Observability':location.pathname==='/security-status'?'Security Status':location.pathname==='/model-evaluation'?'Model Evaluation':location.pathname==='/google-stack'?'Google Stack Evidence':'Integration Status';
+ return <div className="product-page"><Navbar/><main><h1>{title}</h1><p>Live backend-reported configuration and invocation evidence. Credential-required and local-adapter states are never shown as cloud-verified.</p><section>{query.isLoading&&<p>Checking backend integrations…</p>}{query.isError&&<p className="form-error">Integration status unavailable.</p>}{query.data?.map(item=><article className="workspace-card" key={item.integration}><h2>{item.integration}</h2><b>{item.status.replaceAll('_',' ')}</b><pre>{JSON.stringify(item,null,2)}</pre></article>)}</section></main></div>
+}

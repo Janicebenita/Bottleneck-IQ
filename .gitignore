@@ -1,0 +1,36 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+*.db
+.pytest_cache/
+.pytest-tmp/
+.pytest-tmp-*/
+.runtime-tmp-*/
+.video_tools/
+storytelling-output/
+.local-demo.*.log
+demo-video/
+voice.wav
+debug.log
+.coverage
+coverage.xml
+coverage.json
+htmlcov/
+frontend/coverage/
+test-results/
+security-reports/
+.mypy_cache/
+.ruff_cache/
+frontend/node_modules/
+frontend/dist/
+*.tsbuildinfo
+.pnpm-store/
+*.egg-info/
+data/logs/*.jsonl
+data/metrics/*.jsonl
+data/traces/*.jsonl
+!data/**/.gitkeep
+
+# Local credential material must never enter source control.
+Google API Key.docx

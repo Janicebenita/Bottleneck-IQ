@@ -1,0 +1,21 @@
+import {ExternalLink,Waypoints} from 'lucide-react';
+import type {EvidenceReference,JudgeDemoStage,StageFact} from './types';
+
+const List=({title,items}:{title:string;items:string[]})=><section className="jd-ordered-section"><h3>{title}</h3>{items.length?<ul>{items.map((item,index)=><li key={`${item}-${index}`}>{item}</li>)}</ul>:<p>No additional backend evidence is available for this field.</p>}</section>;
+const Facts=({items}:{items:StageFact[]})=><div className="jd-facts">{items.length?items.map((item,index)=><div className={`jd-fact ${item.emphasis??''}`} key={`${item.label}-${index}`}><small>{item.label}</small><strong>{item.value}</strong><em>{item.source}</em></div>):<p className="jd-empty">NOT_YET_EXECUTED</p>}</div>;
+const References=({items}:{items:EvidenceReference[]})=><section className="jd-ordered-section"><h3>8. Evidence references</h3>{items.length?<dl className="jd-reference-list">{items.map((item,index)=><div key={`${item.value}-${index}`}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl>:<p>No additional backend evidence is available for this field.</p>}</section>;
+
+export default function StageExplanationPanel({stage}:{stage:JudgeDemoStage}){
+ return <article id="judge-stage-panel" className="jd-panel" role="tabpanel" aria-labelledby={`stage-tab-${stage.id}`} tabIndex={-1} aria-live="polite">
+  <header><div><small>STAGE {stage.order} OF 20</small><h2>{stage.title}</h2><p>{stage.shortDescription}</p></div>{stage.metric&&<strong className="jd-metric">{stage.metric}</strong>}</header>
+  <section className="jd-purpose"><Waypoints/><div><h3>1. Purpose</h3><p>{stage.purpose}</p></div></section>
+  <section className="jd-ordered-section"><h3>2. What it does</h3><p>{stage.whatItDoes}</p></section>
+  <section className="jd-ordered-section"><h3>3. Why it matters in Bottleneck IQ</h3><p>{stage.whyItMatters}</p></section>
+  <List title="4. What is already implemented" items={stage.implemented}/>
+  <List title="5. What is still missing for live operation" items={stage.missingForLiveOperation}/>
+  <section className="jd-ordered-section"><h3>6. Evidence interpretation</h3><p>Implemented capability and workflow-run evidence are evaluated separately. Values below appear only when the backend produces them; unavailable values are never presented as successful execution.</p></section>
+  <section className="jd-ordered-section"><h3>7. Live backend data</h3><Facts items={stage.liveData}/>{stage.candidates&&<div className="jd-candidates">{stage.candidates.map(c=><article className={`${c.eligible?'eligible':'disqualified'} ${c.candidate_id==='fast'&&!c.eligible?'fast-failure':''}`} key={c.candidate_id}><header><b>{c.name}</b><strong>{c.score}</strong></header><p>{c.action}</p><em>{c.eligible?'ELIGIBLE':`DISQUALIFIED · ${c.gates.find(g=>!g.passed)?.gate??'MANDATORY GATE'}`}</em></article>)}</div>}</section>
+  <References items={stage.evidenceReferences}/><List title="9. Hashes" items={stage.hashes}/><List title="10. Timings" items={stage.timings}/><List title="11. Assumptions" items={stage.assumptions}/><List title="12. Safety implications" items={stage.safetyImplications}/><List title="13. Runtime services involved" items={stage.googleCloudServices}/>
+  <section className="jd-next"><div><h3>14. Next stage</h3><b>{stage.nextStageId?.replaceAll('-',' ').toUpperCase()??'COMPLETE'}</b>{stage.href&&<a href={stage.href}>Open operational stage <ExternalLink/></a>}</div><div><h3>15. Key Takeaway</h3><p>{stage.judgeTakeaway}</p></div></section>
+ </article>;
+}

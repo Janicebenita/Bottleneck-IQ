@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-labelledby="title desc">
+  <title id="title">Bottleneck IQ HumanGuard AWS and Strands architecture</title>
+  <desc id="desc">A quiet monitor invokes a FastAPI service and Strands agent backed by Amazon Bedrock. Bounded tools call deterministic forecast, digital twin, safety gates, and audit evidence before surfacing a decision to a human. AgentCore is the production runtime.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071526"/><stop offset="1" stop-color="#102a43"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-opacity=".3"/></filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#6ee7f9"/></marker>
+    <style>
+      .box{fill:#112f4c;stroke:#4dd8ee;stroke-width:2;rx:16;filter:url(#shadow)}
+      .aws{fill:#3c2d12;stroke:#ffb648}
+      .safe{fill:#123c37;stroke:#52e0b2}
+      .human{fill:#352354;stroke:#bd93f9}
+      .t{font:700 24px Arial,sans-serif;fill:#f5fbff}.s{font:16px Arial,sans-serif;fill:#b9d5e6}.tag{font:700 14px Arial,sans-serif;fill:#69e6f7;letter-spacing:1px}.line{stroke:#6ee7f9;stroke-width:3;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1400" height="760" fill="url(#bg)"/>
+  <text x="70" y="72" class="t" font-size="34">Bottleneck IQ HumanGuard</text>
+  <text x="70" y="105" class="s">Quiet autonomous analysis. Deterministic safety. Human authority.</text>
+
+  <rect x="70" y="165" width="250" height="115" class="box"/>
+  <text x="95" y="200" class="tag">BACKGROUND</text><text x="95" y="235" class="t">Quiet monitor</text><text x="95" y="262" class="s">Only surfaces decisions</text>
+  <path d="M320 222 H385" class="line"/>
+
+  <rect x="390" y="165" width="250" height="115" class="box"/>
+  <text x="415" y="200" class="tag">APPLICATION</text><text x="415" y="235" class="t">FastAPI</text><text x="415" y="262" class="s">Workflow-scoped API</text>
+  <path d="M640 222 H705" class="line"/>
+
+  <rect x="710" y="145" width="285" height="155" class="box aws"/>
+  <text x="735" y="180" class="tag" fill="#ffbe55">AGENTIC CORE</text><text x="735" y="220" class="t">Strands Agent</text><text x="735" y="250" class="s">Plans and invokes tools</text><text x="735" y="278" class="s">Amazon Bedrock model</text>
+  <path d="M995 222 H1060" class="line"/>
+
+  <rect x="1065" y="165" width="265" height="115" class="box aws"/>
+  <text x="1090" y="200" class="tag" fill="#ffbe55">AWS RUNTIME</text><text x="1090" y="235" class="t">AgentCore</text><text x="1090" y="262" class="s">IAM · CloudWatch</text>
+
+  <path d="M850 300 V365" class="line"/>
+  <rect x="155" y="370" width="280" height="125" class="box"/>
+  <text x="180" y="405" class="tag">BOUNDED TOOLS</text><text x="180" y="440" class="t">Evidence + forecast</text><text x="180" y="468" class="s">Seven auditable Strands tools</text>
+  <rect x="560" y="370" width="280" height="125" class="box"/>
+  <text x="585" y="405" class="tag">DETERMINISTIC</text><text x="585" y="440" class="t">Digital twin</text><text x="585" y="468" class="s">Simulate and rank options</text>
+  <rect x="965" y="370" width="280" height="125" class="box safe"/>
+  <text x="990" y="405" class="tag" fill="#5be4bb">GOVERNANCE</text><text x="990" y="440" class="t">Safety gates</text><text x="990" y="468" class="s">Evidence · policy · audit</text>
+  <path d="M435 432 H555" class="line"/><path d="M840 432 H960" class="line"/>
+  <path d="M850 365 C800 330 430 330 300 365" class="line"/>
+
+  <path d="M1105 495 V570" class="line"/>
+  <rect x="875" y="575" width="455" height="115" class="box human"/>
+  <text x="900" y="610" class="tag" fill="#caa7ff">HUMAN AUTHORITY</text><text x="900" y="646" class="t">Approve · reject · request evidence</text><text x="900" y="674" class="s">No autonomous production mutation</text>
+
+  <rect x="70" y="575" width="690" height="115" class="box safe"/>
+  <text x="95" y="610" class="tag" fill="#5be4bb">DECISION OUTPUT</text><text x="95" y="646" class="t">One evidence-backed intervention brief</text><text x="95" y="674" class="s">Forecast → simulations → verified recommendation → SHA-256 audit chain</text>
+  <path d="M965 455 C850 520 775 565 760 620" class="line"/>
+</svg>

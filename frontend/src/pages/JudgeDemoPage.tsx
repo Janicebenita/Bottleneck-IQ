@@ -1,0 +1,63 @@
+import {useEffect,useMemo,useState} from 'react';
+import {useMutation,useQuery,useQueryClient} from '@tanstack/react-query';
+import {Activity,Play,Sparkles} from 'lucide-react';
+import {nexusApi} from '../api/client';
+import {buildJudgeStages} from '../features/judge-demo/stageAdapter';
+import GuidedControls from '../features/judge-demo/GuidedControls';
+import StageExplanationPanel from '../features/judge-demo/StageExplanationPanel';
+import WorkflowStageRail from '../features/judge-demo/WorkflowStageRail';
+import {STAGE_IDS} from '../features/judge-demo/stages';
+import type {JudgeStageId} from '../features/judge-demo/types';
+import {useGuidedPlayback} from '../features/judge-demo/useGuidedPlayback';
+import '../features/judge-demo/judgeDemo.css';
+import type {NexusRun} from '../types';
+import Navbar from '../components/Navbar';
+
+const initialStage=()=>{const value=new URLSearchParams(location.search).get('stage') as JudgeStageId|null;const index=value?STAGE_IDS.indexOf(value):-1;return index<0?0:index};
+const updateStageUrl=(index:number,mode:'push'|'replace')=>{const url=new URL(location.href);url.searchParams.set('stage',STAGE_IDS[index]);history[mode==='push'?'pushState':'replaceState']({},'',`${url.pathname}${url.search}${url.hash}`)};
+
+export default function JudgeDemoPage(){
+ const cache=useQueryClient();
+ const [selectedRunId,setSelectedRunId]=useState<number|null>(null);
+ const workflows=useQuery({queryKey:['judge-workflows'],queryFn:nexusApi.workflows,staleTime:15_000,retry:1});
+ const run=useMemo(()=>{
+  const rows=workflows.data as NexusRun[]|undefined;
+  if(!rows?.length)return undefined;
+  const selected=selectedRunId===null?undefined:rows.find(item=>item.id===selectedRunId);
+  return selected??rows.find(item=>item.state!=='CREATED'||Boolean(item.forecast_json?.predicted_crossing_minutes))??rows[0];
+ },[workflows.data,selectedRunId]);
+ const telemetry=useQuery({queryKey:['judge-telemetry',run?.id],queryFn:()=>nexusApi.telemetry(run!.id),enabled:Boolean(run),staleTime:15_000,retry:1});
+ const evidence=useQuery({queryKey:['judge-evidence',run?.id],queryFn:()=>nexusApi.evidence(run!.id),enabled:Boolean(run),staleTime:15_000,retry:1});
+ const audit=useQuery({queryKey:['judge-audit',run?.id],queryFn:()=>nexusApi.timeline(run!.id),enabled:Boolean(run),staleTime:15_000,retry:1});
+ const verification=useQuery({queryKey:['judge-verification',run?.id],queryFn:()=>nexusApi.verificationResults(run!.id),enabled:Boolean(run),staleTime:15_000,retry:1});
+ const a2a=useQuery({queryKey:['judge-a2a',run?.id],queryFn:()=>nexusApi.a2a(run!.id),enabled:Boolean(run),staleTime:30_000,retry:1});
+ const integrations=useQuery({queryKey:['judge-integrations'],queryFn:nexusApi.integrations,staleTime:30_000,retry:1});
+ const strands=useQuery({queryKey:['judge-strands'],queryFn:nexusApi.strandsStatus,staleTime:30_000,retry:1});
+ const antigravity=useQuery({queryKey:['judge-antigravity'],queryFn:nexusApi.antigravity,staleTime:60_000,retry:1});
+ const loading=[workflows,telemetry,evidence,audit,verification,integrations].some(query=>query.isLoading);
+ const failed=[workflows,telemetry,evidence,audit,verification,integrations].some(query=>query.isError);
+ const stages=useMemo(()=>buildJudgeStages({run,telemetry:telemetry.data,evidence:evidence.data,audit:audit.data,verification:verification.data,integrations:integrations.data,a2a:a2a.data,antigravity:antigravity.data,strands:strands.data,loading,failed}),[run,telemetry.data,evidence.data,audit.data,verification.data,integrations.data,a2a.data,antigravity.data,strands.data,loading,failed]);
+ const playback=useGuidedPlayback(stages.length,updateStageUrl,initialStage());
+ const refresh=()=>Promise.all(['judge-workflows','judge-telemetry','judge-evidence','judge-audit','judge-verification','judge-integrations','judge-a2a'].map(key=>cache.invalidateQueries({queryKey:[key]})));
+ const hasWorkflowEvidence=Boolean(run&&(run.state==='AWAITING_HUMAN'||run.state==='DECIDED'));
+ const bootstrap=useMutation({mutationFn:async()=>{const created=await nexusApi.seed();await nexusApi.invokeStrands(created.id);return (await nexusApi.workflows()).find(item=>item.id===created.id)??created},onSuccess:async executed=>{cache.setQueryData<NexusRun[]>(['judge-workflows'],rows=>[executed,...(rows??[]).filter(item=>item.id!==executed.id)]);setSelectedRunId(executed.id);await refresh();playback.restart()}});
+ const execute=useMutation({mutationFn:async()=>{await nexusApi.invokeStrands(run!.id);return (await nexusApi.workflows()).find(item=>item.id===run!.id)??run!},onSuccess:async executed=>{setSelectedRunId(executed.id);await refresh();playback.restart()}});
+ const busy=bootstrap.isPending||execute.isPending;
+ const toggleGuided=()=>{if(playback.playing){playback.toggle();return}if(hasWorkflowEvidence){playback.toggle();return}bootstrap.mutate()};
+
+ useEffect(()=>{const reduced=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;const panel=document.getElementById('judge-stage-panel');if(panel&&typeof panel.scrollIntoView==='function')panel.scrollIntoView({behavior:reduced?'auto':'smooth',block:'nearest'})},[playback.index]);
+ useEffect(()=>{const pop=()=>playback.select(initialStage(),false);addEventListener('popstate',pop);return()=>removeEventListener('popstate',pop)},[]);
+
+ return <div className="product-page judge-demo-v2"><Navbar/>
+
+  <main>
+   <header className="jd-hero"><div><small>STRANDS AGENTS · AMAZON BEDROCK · PROFESSIONAL AGENTS</small><h1>See tomorrow’s bottleneck.<br/><span>Interrupt humans only when it matters.</span></h1><p>HumanGuard works in the background: Strands selects bounded evidence, forecast, Digital Twin, simulation, and verification tools, then surfaces one decision only after deterministic gates pass.</p><div className="jd-run-actions"><button className="primary" onClick={()=>bootstrap.mutate()} disabled={busy}><Play/>{bootstrap.isPending?'Strands is investigating…':'Start background investigation'}</button><button className="primary" onClick={()=>execute.mutate()} disabled={!run||busy}><Activity/>{execute.isPending?'Strands is running tools…':'Re-run Strands agent'}</button></div></div><div className="jd-hero-signal"><Sparkles/><small>{strands.data?.sdk_available?'STRANDS SDK READY':'STRANDS SETUP REQUIRED'}</small><strong>{run?.state?.replaceAll('_',' ')??'QUIET · MONITORING'}</strong><span>{strands.data?.provider??'Amazon Bedrock'} · {strands.data?.region??'us-east-1'}</span><b>{run?.production_action_executed?'FAILED':'HUMAN AUTHORITY ENFORCED'}</b></div></header>
+   {bootstrap.isPending&&<div className="jd-alert" role="status"><b>Generating deterministic backend evidence…</b><span>Creating the workflow, replaying 12 scenarios, applying mandatory gates, and persisting hashes before guided playback begins.</span></div>}
+   {(bootstrap.isError||execute.isError)&&<div className="jd-alert" role="alert"><b>Backend workflow generation failed.</b><span>No result was fabricated. Retry when the API is available.</span></div>}
+   {failed&&<div className="jd-alert" role="alert"><b>Backend evidence is currently unavailable.</b><span>The experience explains each retained architecture stage, then labels its evidence state without fabricating success.</span></div>}
+   <GuidedControls index={playback.index} total={stages.length} playing={playback.playing} guided={playback.guided} preparing={bootstrap.isPending} onPrevious={playback.previous} onNext={playback.next} onToggle={toggleGuided} onRestart={playback.restart} onExit={playback.exit}/>
+   <section className="jd-workspace" aria-label="Interactive Bottleneck IQ workflow"><WorkflowStageRail stages={stages} selected={playback.index} onSelect={playback.select}/><StageExplanationPanel key={stages[playback.index].id} stage={stages[playback.index]}/></section>
+   <section className="jd-google-lifecycle"><div><small>AWS AGENT LIFECYCLE</small><p><b>Background Monitor</b><i>→</i><b>Strands Agent</b><i>→</i><b>Amazon Bedrock</b><i>→</i><b>Bounded Tools</b><i>→</i><b>Human Decision</b></p></div><div><small>PRODUCTION RUNTIME</small><p><b>AgentCore Runtime</b><i>→</i><b>CloudWatch Traces</b><i>→</i><b>IAM</b></p><span>Deterministic gates · SHA-256 audit chain · no autonomous production action</span></div></section>
+  </main>
+ </div>;
+}
