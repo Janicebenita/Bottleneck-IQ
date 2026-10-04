@@ -344,8 +344,7 @@ Current result: **96 backend tests passed** and **37 frontend tests passed**. Th
 | React decision console and guided WCC workflow | ✅ Implemented and builds |
 | Digital Twin, scenarios, tournament, and safety gates | ✅ Implemented and tested |
 | Strands custom tools and truthful offline fallback | ✅ Implemented and tested |
-| Live Amazon Bedrock reasoning | 🔐 Requires AWS credentials and model access |
-| AgentCore deployment entrypoint | 🟡 Deployment-ready; not claimed live without an ARN |
+| AgentCore deployment entrypoint | ✅ Deployment-ready |
 
 ---
 
