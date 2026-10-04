@@ -374,6 +374,101 @@ Current result: **96 backend tests passed** and **37 frontend tests passed**. Th
 
 ---
 
+## 🤖 Agent Workforce
+
+The workforce is a transparent set of bounded specialists. Each agent reads validated artifacts, writes inspectable outputs, and returns control to the orchestrator. None can execute a production change.
+
+| Agent | Responsibility | Output |
+|---|---|---|
+| **Nexus Orchestrator** | Coordinates state transitions and enforces non-execution | Workflow state and audit links |
+| **Observer** | Normalises the operational window | Telemetry observations |
+| **Evidence** | Validates evidence and hashes | Evidence catalogue and gap report |
+| **Process Discovery** | Reconstructs service topology and critical path | Dependency map |
+| **Prediction** | Forecasts safe-capacity crossing | Forecast, assumptions, confidence |
+| **Digital Twin** | Binds evidence into a bounded Twin manifest | Versioned Twin hash |
+| **Simulation** | Replays deterministic counterfactuals | Scenario results and hashes |
+| **Optimization** | Ranks only gate-eligible interventions | FAST/SAFE/OPTIMAL tournament |
+| **Verification** | Checks gates and audit readiness | Verification result |
+| **Business Impact** | Estimates customer and commercial exposure | Formula-backed impact estimate |
+| **Executive** | Prepares the final decision brief | Recommendation and uncertainty |
+
+### API surface
+
+The versioned API covers workflows, evidence, telemetry, Twin generation, simulations, intervention ranking, approvals, export, workforce views, and Strands invocation. OpenAPI is available at `/docs` on the API service.
+
+| Surface | Purpose |
+|---|---|
+| `/api/v1/workflows` | Create and inspect bounded investigations |
+| `/api/v1/workflows/{id}/strands/invoke` | Run the live or deterministic agent path |
+| `/api/v1/strands/status` | Report SDK, model, and AgentCore readiness truthfully |
+| `/api/v1/agents` | Browse the agent catalogue and artifacts |
+| `/api/v1/evidence` and `/api/v1/audit` | Inspect provenance and chained events |
+| `/api/v1/verification` | Run and inspect mandatory safety checks |
+| `/api/v1/export` | Produce a reviewable evidence package |
+
+---
+
+## 🎥 Narrated Walkthrough
+
+The repository includes a short guided-flow asset at [`docs/assets/bottleneck-iq-30-second-flow.gif`](docs/assets/bottleneck-iq-30-second-flow.gif) and a reproducible script at [`docs/WCC_DEMO_SCRIPT.md`](docs/WCC_DEMO_SCRIPT.md).
+
+1. Start with a healthy-looking Payment Service and a quiet reactive alert.
+2. Reveal rising Redis pressure and the transparent **+30 / +45 minute** forecast.
+3. Open the Twin manifest and its content hash.
+4. Replay twelve scenarios and compare intervention candidates.
+5. Show FAST being disqualified by a mandatory safety gate.
+6. Surface the eligible recommendation and stop at the named human decision.
+
+Every stage is inspectable, evidence references remain visible, and guided playback never approves or executes a production action.
+
+---
+
+## ☁️ Deployment Notes
+
+The checked-in [`render.yaml`](render.yaml) defines three public Render services:
+
+| Service | Role | URL |
+|---|---|---|
+| `janicebenita-bottleneck-iq` | React static command centre | [Open website](https://janicebenita-bottleneck-iq.onrender.com) |
+| `janicebenita-bottleneck-iq-api` | FastAPI workflow and agent API | [Open API](https://janicebenita-bottleneck-iq-api.onrender.com) |
+| `janicebenita-bottleneck-iq-simulator` | Demo simulator and seeded support service | [Open simulator](https://janicebenita-bottleneck-iq-simulator.onrender.com) |
+
+Free Render services are suitable for a demo or review environment. They may sleep after inactivity, have finite monthly instance hours, and use ephemeral local storage. For production operation, use authenticated cloud model access, persistent database storage, monitoring, and a paid service plan.
+
+AgentCore deployment assets live under [`deploy/agentcore`](deploy/agentcore). Deployment is manual and requires AWS credentials; the application never claims a live managed runtime without authenticated evidence.
+
+---
+
+## ❓ Technical Q&A
+
+**Is the model autonomous?** It coordinates bounded investigation steps, but deterministic services own calculations and policy. A human remains the authority for consequential decisions.
+
+**What happens without AWS credentials?** The API runs the deterministic offline path and reports `deterministic-offline-fallback`. It never labels that run as Bedrock execution.
+
+**Can the agent change production?** No. Those tools do not exist in the exposed tool set. Approval records a decision and enables evidence export only.
+
+**Is the forecast a probability?** No. It is a transparent bounded forecast based on visible seeded measurements and documented assumptions.
+
+**Why use a Digital Twin?** The Twin freezes the evidence, controls, limits, and seed used for counterfactual analysis so another reviewer can reproduce the result.
+
+**Why can a lower-scoring intervention win?** Eligibility is evaluated before score. A candidate that fails a mandatory safety gate is disqualified regardless of predicted benefit.
+
+**What is the path from demo to production?** Connect real telemetry, replace SQLite with durable storage, configure least-privilege AWS access, deploy the AgentCore entrypoint, add authenticated observability, and preserve the same evidence and human-control contracts.
+
+---
+
+## 🗺️ Production Evolution
+
+| Phase | Extension | Invariant preserved |
+|---|---|---|
+| 1 | Connect live telemetry and traces | Inputs remain attributable and hashable |
+| 2 | Add durable evidence and audit storage | History remains exportable and tamper-evident |
+| 3 | Enable authenticated Bedrock reasoning | Model claims remain separate from deterministic authority |
+| 4 | Deploy AgentCore with least-privilege IAM | Runtime evidence is required before live claims |
+| 5 | Add enterprise eventing and SLO integrations | No production mutation is introduced implicitly |
+
+---
+
 ## 👩‍💻 Author
 
 Built by **[Janice Benita F](https://github.com/Janicebenita)** for WCC.
