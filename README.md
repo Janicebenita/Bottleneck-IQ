@@ -31,16 +31,10 @@
   <a href="https://janicebenita-bottleneck-iq.onrender.com/"><strong>🚀 Open Live Working Model</strong></a>
 </p>
 
-> [!IMPORTANT]
-> **Working-build status:** the complete deterministic workflow runs locally without cloud credentials. Live Strands + Amazon Bedrock reasoning is an optional authenticated mode.<br/>
-> **Safety boundary:** HumanGuard prepares evidence and a decision brief. It never deploys, scales, rolls back, or changes production infrastructure.
-
-## 🌐 Live WCC Demo
+## 🌐 Live Demo
 
 The deployed decision console is available at **[bottleneck-iq.onrender.com](https://janicebenita-bottleneck-iq.onrender.com/)**. It opens the same guided workflow described below: forecast the bottleneck, inspect the Digital Twin, replay scenarios, compare interventions, and stop at the human decision boundary.
 
-> [!NOTE]
-> The public Render deployment is a review/demo environment. Free services may sleep after inactivity and use ephemeral local storage; the deterministic fallback keeps the experience usable without cloud-model credentials.
 
 ---
 
