@@ -27,9 +27,20 @@
   <a href="#verification"><strong>Verification</strong></a>
 </p>
 
+<p align="center">
+  <a href="https://janicebenita-bottleneck-iq.onrender.com/"><strong>🚀 Open Live Working Model</strong></a>
+</p>
+
 > [!IMPORTANT]
 > **Working-build status:** the complete deterministic workflow runs locally without cloud credentials. Live Strands + Amazon Bedrock reasoning is an optional authenticated mode.<br/>
 > **Safety boundary:** HumanGuard prepares evidence and a decision brief. It never deploys, scales, rolls back, or changes production infrastructure.
+
+## 🌐 Live WCC Demo
+
+The deployed decision console is available at **[bottleneck-iq.onrender.com](https://janicebenita-bottleneck-iq.onrender.com/)**. It opens the same guided workflow described below: forecast the bottleneck, inspect the Digital Twin, replay scenarios, compare interventions, and stop at the human decision boundary.
+
+> [!NOTE]
+> The public Render deployment is a review/demo environment. Free services may sleep after inactivity and use ephemeral local storage; the deterministic fallback keeps the experience usable without cloud-model credentials.
 
 ---
 
@@ -165,17 +176,6 @@ The React command centre includes a guided, stage-by-stage WCC experience and an
 - Human approval boundary
 
 Open `http://localhost:5173/judge-demo` after starting the application. Guided playback never presses an approval button.
-
-### Recommended five-minute demo route
-
-| Time | Demonstrate | Proof point |
-|---|---|---|
-| 0:00–0:40 | Mission and rising Redis pressure | Healthy-now does not mean safe-next |
-| 0:40–1:20 | +30 and +45 forecast | Early warning precedes reactive alert |
-| 1:20–2:05 | Twin manifest and hash | Model boundary and evidence are explicit |
-| 2:05–3:15 | Twelve-scenario replay | Results are deterministic and inspectable |
-| 3:15–4:10 | FAST rejection and OPTIMAL selection | Safety gates override score |
-| 4:10–5:00 | Human decision and export boundary | Governance is built into the workflow |
 
 ---
 
@@ -473,11 +473,10 @@ AgentCore deployment assets live under [`deploy/agentcore`](deploy/agentcore). D
 
 Built by **[Janice Benita F](https://github.com/Janicebenita)** for WCC.
 
-[MIT licensed](LICENSE). Contributions should preserve deterministic evidence, mandatory gates, the human approval boundary, and the absence of automatic production execution.
-
 ---
 
 <p align="center">
   <strong>Predict early. Simulate safely. Decide with evidence.</strong><br/>
   <sub>Bottleneck IQ HumanGuard · Operational Intelligence with Human Control</sub>
 </p>
+
