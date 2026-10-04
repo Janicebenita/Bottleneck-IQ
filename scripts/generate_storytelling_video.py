@@ -18,6 +18,7 @@ import time
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "storytelling-output"
@@ -163,7 +164,7 @@ async def capture(url: str, durations: list[float]) -> Path:
             ),
             None,
         )
-        launch_options = {"headless": True}
+        launch_options: dict[str, Any] = {"headless": True}
         if installed_browser is not None:
             launch_options["executable_path"] = str(installed_browser)
         browser = await manager.chromium.launch(**launch_options)
@@ -317,3 +318,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
