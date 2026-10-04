@@ -14,9 +14,9 @@ from .toolbox import toolbox
 try:
     _strands = import_module("strands")
     _strands_models = import_module("strands.models")
-    AgentClass: Any = getattr(_strands, "Agent")
-    BedrockModelClass: Any = getattr(_strands_models, "BedrockModel")
-    tool_decorator: Any = getattr(_strands, "tool")
+    AgentClass: Any = _strands.Agent
+    BedrockModelClass: Any = _strands_models.BedrockModel
+    tool_decorator: Any = _strands.tool
     STRANDS_AVAILABLE = True
 except ImportError:  # Keeps health endpoints truthful before optional setup completes.
     AgentClass = None
@@ -247,3 +247,4 @@ def invoke_workflow_agent(workflow_id: int, prompt: str) -> StrandsRunResult:
         if settings.strands_offline_fallback:
             return _offline_fallback(workflow_id, type(exc).__name__)
         raise
+
