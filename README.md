@@ -28,7 +28,8 @@
 </p>
 
 <p align="center">
-  <a href="https://janicebenita-bottleneck-iq.onrender.com/"><strong>🚀 Open Live Working Model</strong></a>
+  <a href="https://janicebenita-bottleneck-iq.onrender.com/"><strong>🚀 Open Live Working Model</strong></a> ·
+     <a href="https://drive.google.com/file/d/1frmK8dW1PzGGKGi5iGH8dplYeH2vdbwY/view?usp=sharing"><strong>🎥 Watch Full Demo Video</strong></a>
 </p>
 
 ## 🌐 Live Demo
