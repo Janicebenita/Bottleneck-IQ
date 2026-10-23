@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from sqlalchemy import select, text
 from .api import nexus_router, router, strands_router
 from .enterprise import router as enterprise_router
@@ -31,6 +32,12 @@ app.include_router(router)
 app.include_router(nexus_router)
 app.include_router(strands_router)
 app.include_router(enterprise_router)
+@app.get("/", include_in_schema=False)
+def open_decision_console():
+    """Send visitors who open the API hostname to the public decision console."""
+    frontend_url = settings.cors_origins.split(",", maxsplit=1)[0].strip().rstrip("/")
+    return RedirectResponse(url=f"{frontend_url}/judge-demo", status_code=307)
+
 @app.get("/api/v1/integrations/antigravity/status", response_model=AntigravityStatus, tags=["Integrations"])
 def antigravity_status() -> AntigravityStatus:
     return get_antigravity_status()

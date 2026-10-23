@@ -1,3 +1,8 @@
+def test_api_root_redirects_to_decision_console(client):
+    response = client.get("/", follow_redirects=False)
+    assert response.status_code == 307
+    assert response.headers["location"] == "http://localhost:5173/judge-demo"
+
 def test_seed_and_approval_gate(client):
     assert client.post("/api/demo/seed").status_code == 200
     incident = client.get("/api/incidents").json()[-1]
